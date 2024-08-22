@@ -10,30 +10,32 @@ export default function Home() {
     },
   ])
   const [message, setMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const sendMessage = async () => {
-    setMessage('')
-    setMessages((messages) => [
-      ...messages,
-      { role: 'user', content: message },
-      { role: 'assistant', content: '' },
-    ])
+    if (!message.trim()) return; // Prevent sending empty messages
 
-    const response = fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify([...messages, { role: 'user', content: message }]),
-    }).then(async (res) => {
-      const reader = res.body.getReader()
+    const userMessage = { role: 'user', content: message }
+    setMessages((messages) => [...messages, userMessage, { role: 'assistant', content: '' }])
+    setMessage('')
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([...messages, userMessage]),
+      })
+
+      const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let result = ''
 
-      return reader.read().then(function processText({ done, value }) {
-        if (done) {
-          return result
-        }
+      const processText = async ({ done, value }) => {
+        if (done) return result
+
         const text = decoder.decode(value || new Uint8Array(), { stream: true })
         setMessages((messages) => {
           let lastMessage = messages[messages.length - 1]
@@ -43,9 +45,21 @@ export default function Home() {
             { ...lastMessage, content: lastMessage.content + text },
           ]
         })
-        return reader.read().then(processText)
-      })
-    })
+
+        const { done: doneReading, value: newValue } = await reader.read()
+        return processText({ done: doneReading, value: newValue })
+      }
+
+      await reader.read().then(processText)
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      setMessages((messages) => [
+        ...messages.slice(0, messages.length - 1),
+        { role: 'assistant', content: 'Sorry, something went wrong.' },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -90,7 +104,7 @@ export default function Home() {
                 borderRadius={16}
                 p={3}
               >
-                {message.content}
+                {message.content || (isLoading && message.role === 'assistant' && '...')}
               </Box>
             </Box>
           ))}
@@ -101,10 +115,20 @@ export default function Home() {
             fullWidth
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') sendMessage()
+            }}
+            disabled={isLoading}
           />
-          <Button variant="contained" onClick={sendMessage}>
+          <Button
+            variant="contained"
+            onClick={sendMessage}
+            disabled={isLoading}
+          >
             Send
           </Button>
         </Stack>
       </Stack>
     </Box>
+  )
+}
