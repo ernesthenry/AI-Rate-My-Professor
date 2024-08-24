@@ -29,28 +29,32 @@ export default function Home() {
         body: JSON.stringify([...messages, userMessage]),
       })
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let result = ''
+      if (response.body) {
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let result = ''
 
-      const processText = async ({ done, value }) => {
-        if (done) return result
+        const processText = async ({ done, value }) => {
+          if (done) return result
 
-        const text = decoder.decode(value || new Uint8Array(), { stream: true })
-        setMessages((messages) => {
-          let lastMessage = messages[messages.length - 1]
-          let otherMessages = messages.slice(0, messages.length - 1)
-          return [
-            ...otherMessages,
-            { ...lastMessage, content: lastMessage.content + text },
-          ]
-        })
+          const text = decoder.decode(value || new Uint8Array(), { stream: true })
+          setMessages((messages) => {
+            let lastMessage = messages[messages.length - 1]
+            let otherMessages = messages.slice(0, messages.length - 1)
+            return [
+              ...otherMessages,
+              { ...lastMessage, content: lastMessage.content + text },
+            ]
+          })
 
-        const { done: doneReading, value: newValue } = await reader.read()
-        return processText({ done: doneReading, value: newValue })
+          const { done: doneReading, value: newValue } = await reader.read()
+          return processText({ done: doneReading, value: newValue })
+        }
+
+        await reader.read().then(processText)
+      } else {
+        throw new Error('Response body is null')
       }
-
-      await reader.read().then(processText)
     } catch (error) {
       console.error('Failed to send message:', error)
       setMessages((messages) => [
