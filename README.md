@@ -2,15 +2,23 @@
 
 In the era of AI-driven applications, Retrieval-Augmented Generation (RAG) has emerged as a powerful technique for enhancing large language models. The **Rate My Professor AI Assistant** project is an exemplary implementation of RAG, designed to provide context-aware responses about professors and courses. This tutorial demonstrates how to build a RAG-based application using modern technologies like Next.js, React, Pinecone, and the OpenAI API.
 
-## Project Overview
+## Problem Statement
 
-The Rate My Professor AI Assistant leverages RAG to combine the extensive knowledge of a large language model with specific, up-to-date information stored in a vector database. This approach enables the AI to deliver accurate and relevant responses to user queries about professors and courses.
+Students and professionals often seek reliable, detailed information about professors and courses to make informed decisions about their education. Traditional review platforms can be overwhelming and may lack context-specific answers. The challenge is to develop an AI-powered system that provides accurate, relevant, and context-aware responses about professors by combining broad AI knowledge with specific, up-to-date information.
 
-### Core Components
+## Action
 
-1. **Next.js Frontend**: Provides a user interface for interacting with the AI assistant.
-2. **Pinecone Vector Database**: Stores and retrieves embeddings of professor reviews.
-3. **OpenAI API**: Generates human-like responses and creates embeddings for text.
+To address this challenge, we developed the Rate My Professor AI Assistant using Retrieval-Augmented Generation (RAG). We created a system where:
+
+1. **Frontend**: We used Next.js and Material-UI to build a user-friendly chat interface.
+2. **Backend**: We integrated Pinecone for storing and retrieving embeddings of professor reviews, and the OpenAI API for generating intelligent responses.
+3. **Data Processing**: We implemented a Python script to process and store professor reviews in Pinecone, ensuring that the AI assistant can provide relevant answers based on recent data.
+
+The system was designed to handle user queries, generate embeddings, query the Pinecone vector database, and format results using the OpenAI API to deliver accurate and context-aware responses.
+
+## Result
+
+The Rate My Professor AI Assistant successfully demonstrates how RAG can be used to create a sophisticated AI-powered assistant. Users can interact with a responsive chat interface that provides accurate, context-aware responses about professors and courses. By leveraging the combination of Pinecone's vector database and OpenAI's language model, the application offers a powerful tool for accessing detailed and relevant academic information, enhancing the user experience and making the process of gathering information more efficient and effective.
 
 ## Features
 
